@@ -1,6 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:audioplayers/audioplayers.dart';
+import 'package:intl/intl.dart';
 
 void main() {
+
   runApp(const MyApp());
 }
 
@@ -24,13 +29,13 @@ class MyApp extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key, required this.title}) : super(key: key);
+  MyHomePage({Key? key, required this.title}) : super(key: key);
 
 
   final String title;
@@ -39,14 +44,53 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
+
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
+  Stopwatch s = Stopwatch();
+  //音を出すためのインスタンス
+  final _audio = AudioCache();
+  String display = '00:00';
 
-  void _incrementCounter() {
+  @override
+  void initState() {
+    Timer.periodic(
+      Duration(seconds: 1),
+      _onTimer,
+    );
+    super.initState();
+  }
+
+  int second = 0;
+  int minuts = 0;
+
+  void _onTimer(Timer timer) {
+    _updatetime();
+  }
+
+
+  void _updatetime() {
+    print(s.elapsedMilliseconds);
     setState(() {
-      _counter++;
+      second = (s.elapsedMilliseconds / 1000).toInt() % 60;
+      minuts = (s.elapsedMilliseconds / 60000).toInt();
+      display = '${minuts}:${second}';
+      print("updata");
     });
   }
+
+  void _start(){
+    s.start();
+  }
+
+  void _stop(){
+    s.stop();
+  }
+
+  void _reset(){
+    s.reset();
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -63,21 +107,157 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
+            Text(display, style: TextStyle(fontWeight: FontWeight.normal, fontSize: 50),),
+            Row(
+              children: [
+                Icon(
+                  Icons.notifications,
+                ),
+                Padding(
+                  padding: EdgeInsets.all(30),
+                ),
+                GestureDetector(
+                  onTap: () {
+                    showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (_) {
+                        return AlertDialog(
+                          title: Text("This is the title"),
+                          content: Text("This is the content"),
+                          actions: [
+                            FlatButton(
+                              child: Text("Cancel"),
+                              onPressed: () => Navigator.pop(context),
+                            ),
+                            FlatButton(
+                              child: Text("OK"),
+                              onPressed: () => print('OK'),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  },
+                  // タッチ検出対象のWidget
+                  child: Text(
+                    '${_counter}',
+                    textAlign: TextAlign.center,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                )
+              ],
             ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
+            Padding(
+              padding: EdgeInsets.all(30),
+            ),
+            Row(
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.notifications,
+                    ),
+                    Icon(
+                      Icons.notifications,
+                    ),
+                  ],
+                ),
+                Padding(
+                  padding: EdgeInsets.all(30),
+                ),
+                Text("ベル2"),
+              ],
+            ),
+            Padding(
+              padding: EdgeInsets.all(30),
+            ),
+            Row(
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.notifications,
+                    ),
+                    Icon(
+                      Icons.notifications,
+                    ),
+                    Icon(
+                      Icons.notifications,
+                    ),
+                  ],
+                ),
+                Padding(
+                  padding: EdgeInsets.all(30),
+                ),
+                Text("ベル3"),
+              ],
+            ),
+            Padding(
+              padding: EdgeInsets.all(60),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                OutlinedButton(
+                  child: s.isRunning ? Text('一時停止') : Text('スタート'),
+                  style: OutlinedButton.styleFrom(
+                    primary: Colors.black,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    side: const BorderSide(),
+                  ),
+                  onPressed: () {
+                    if(s.isRunning == true) {
+                        _stop();
+                    }else{
+                        _start();
+                    }
+                  },
+                ),
+                Padding(
+                  padding: EdgeInsets.all(30),
+                ),
+                OutlinedButton(
+                  child: const Icon(
+                    Icons.notifications,
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    primary: Colors.black,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    side: const BorderSide(),
+                  ),
+                  onPressed: () async {
+                    _audio.play('bell.mp3');
+                    await Future.delayed(Duration(milliseconds: 500));
+                    _audio.play('bell.mp3');
+                  },
+                ),
+                Padding(
+                  padding: EdgeInsets.all(30),
+                ),
+                OutlinedButton(
+                  child: const Text('リセット'),
+                  style: OutlinedButton.styleFrom(
+                    primary: Colors.black,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    side: const BorderSide(),
+                  ),
+                  onPressed: () {
+                    _reset();
+                  },
+                ),
+              ],
             ),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
