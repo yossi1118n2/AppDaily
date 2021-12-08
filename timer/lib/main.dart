@@ -1,7 +1,9 @@
 import 'dart:async';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter_picker/flutter_picker.dart';
 import 'package:intl/intl.dart';
 
 void main() {
@@ -52,31 +54,58 @@ class _MyHomePageState extends State<MyHomePage> {
   final _audio = AudioCache();
   String display = '00:00';
 
+  late DateTime _datetime;
   @override
   void initState() {
     Timer.periodic(
       Duration(seconds: 1),
       _onTimer,
     );
+    _datetime = DateTime.utc(0, 0, 0);
+    print(_datetime);
     super.initState();
   }
 
   int second = 0;
-  int minuts = 0;
+  int minutes = 0;
+
+  int second1 = 0;
+  int minutes1 = 10;
+
+  int second2 = 0;
+  int minutes2 = 0;
+
+  int second3 = 0;
+  int minutes3 = 0;
+
 
   void _onTimer(Timer timer) {
     _updatetime();
   }
 
 
-  void _updatetime() {
+  Future<void> _updatetime() async {
     print(s.elapsedMilliseconds);
     setState(() {
       second = (s.elapsedMilliseconds / 1000).toInt() % 60;
-      minuts = (s.elapsedMilliseconds / 60000).toInt();
-      display = '${minuts}:${second}';
+      minutes = (s.elapsedMilliseconds / 60000).toInt();
+      display = '${minutes}:${second}';
       print("updata");
     });
+
+    if(second1 == second && minutes1 == minutes){
+      _audio.play('bell.mp3');
+    }else if(second2 == second && minutes2 == minutes){
+      _audio.play('bell.mp3');
+      await Future.delayed(Duration(milliseconds: 500));
+      _audio.play('bell.mp3');
+    }if(second3 == second && minutes3 == minutes){
+      _audio.play('bell.mp3');
+      await Future.delayed(Duration(milliseconds: 500));
+      _audio.play('bell.mp3');
+      await Future.delayed(Duration(milliseconds: 500));
+      _audio.play('bell.mp3');
+    }
   }
 
   void _start(){
@@ -117,27 +146,14 @@ class _MyHomePageState extends State<MyHomePage> {
                   padding: EdgeInsets.all(30),
                 ),
                 GestureDetector(
-                  onTap: () {
-                    showDialog(
-                      context: context,
-                      barrierDismissible: false,
-                      builder: (_) {
-                        return AlertDialog(
-                          title: Text("This is the title"),
-                          content: Text("This is the content"),
-                          actions: [
-                            FlatButton(
-                              child: Text("Cancel"),
-                              onPressed: () => Navigator.pop(context),
-                            ),
-                            FlatButton(
-                              child: Text("OK"),
-                              onPressed: () => print('OK'),
-                            ),
-                          ],
-                        );
+                  onTap: () async {
+                    Picker(
+                      adapter: DateTimePickerAdapter(type: PickerDateTimeType.kHMS, value: _datetime, customColumnType: [3, 4, 5]),
+                      title: Text("Select Time"),
+                      onConfirm: (Picker picker, List value) {
+                        setState(() => {_datetime = DateTime.utc(0, 0, 0, value[0], value[1], value[2])});
                       },
-                    );
+                    ).showModal(context);
                   },
                   // タッチ検出対象のWidget
                   child: Text(
@@ -261,3 +277,7 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 }
+
+
+
+
