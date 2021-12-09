@@ -4,7 +4,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter_picker/flutter_picker.dart';
-import 'package:intl/intl.dart';
 
 void main() {
 
@@ -31,7 +30,7 @@ class MyApp extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: MyHomePage(title: 'Flutter Demo Home Page'),
+      home: MyHomePage(title: 'プレゼンタイマー'),
     );
   }
 }
@@ -48,7 +47,6 @@ class MyHomePage extends StatefulWidget {
 
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
   Stopwatch s = Stopwatch();
   //音を出すためのインスタンス
   final _audio = AudioCache();
@@ -70,7 +68,7 @@ class _MyHomePageState extends State<MyHomePage> {
   int minutes = 0;
 
   int second1 = 0;
-  int minutes1 = 10;
+  int minutes1 = 0;
 
   int second2 = 0;
   int minutes2 = 0;
@@ -89,17 +87,18 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       second = (s.elapsedMilliseconds / 1000).toInt() % 60;
       minutes = (s.elapsedMilliseconds / 60000).toInt();
-      display = '${minutes}:${second}';
       print("updata");
     });
 
-    if(second1 == second && minutes1 == minutes){
+    if(second == 0 && minutes == 0){
+      print('skip');
+    }else if(second1 == second && minutes1 == minutes){
       _audio.play('bell.mp3');
     }else if(second2 == second && minutes2 == minutes){
       _audio.play('bell.mp3');
       await Future.delayed(Duration(milliseconds: 500));
       _audio.play('bell.mp3');
-    }if(second3 == second && minutes3 == minutes){
+    }else if(second3 == second && minutes3 == minutes){
       _audio.play('bell.mp3');
       await Future.delayed(Duration(milliseconds: 500));
       _audio.play('bell.mp3');
@@ -118,6 +117,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _reset(){
     s.reset();
+    s.stop();
   }
 
 
@@ -136,8 +136,31 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Text(display, style: TextStyle(fontWeight: FontWeight.normal, fontSize: 50),),
             Row(
+
+              children: [
+                Padding(
+                  padding: EdgeInsets.all(30),
+                ),
+                Text('${minutes.toString().padLeft(2, '0')}', style: TextStyle(fontWeight: FontWeight.normal, fontSize: 80),),
+                Padding(
+                  padding: EdgeInsets.all(10),
+                ),
+                Text(':', style: TextStyle(fontWeight: FontWeight.normal, fontSize: 80),),
+                Padding(
+                  padding: EdgeInsets.all(10),
+                ),
+                Text('${second.toString().padLeft(2, '0')}', style: TextStyle(fontWeight: FontWeight.normal, fontSize: 80),),
+                Padding(
+                  padding: EdgeInsets.all(20),
+                ),
+              ],
+            ),
+            Padding(
+              padding: EdgeInsets.all(50),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
                   Icons.notifications,
@@ -151,13 +174,62 @@ class _MyHomePageState extends State<MyHomePage> {
                       adapter: DateTimePickerAdapter(type: PickerDateTimeType.kHMS, value: _datetime, customColumnType: [3, 4, 5]),
                       title: Text("Select Time"),
                       onConfirm: (Picker picker, List value) {
-                        setState(() => {_datetime = DateTime.utc(0, 0, 0, value[0], value[1], value[2])});
+                        setState(() => {
+                        _datetime = DateTime.utc(0, 0, 0, value[0], value[1], value[2])});
+                        minutes1 = value[1];
+                        second1 = value[2];
+                      },
+                    ).showModal(context);
+                  },
+                  // タッチ検出対象のWidget
+                  child: Row(
+                    children: [
+                      Text(
+                        '${minutes1.toString().padLeft(2, '0')}:${second1.toString().padLeft(2, '0')}',
+                        textAlign: TextAlign.center,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                )
+              ],
+            ),
+            Padding(
+              padding: EdgeInsets.all(10),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.notifications,
+                    ),
+                    Icon(
+                      Icons.notifications,
+                    ),
+                  ],
+                ),
+                Padding(
+                  padding: EdgeInsets.all(30),
+                ),
+                GestureDetector(
+                  onTap: () async {
+                    Picker(
+                      adapter: DateTimePickerAdapter(type: PickerDateTimeType.kHMS, value: _datetime, customColumnType: [3, 4, 5]),
+                      title: Text("Select Time"),
+                      onConfirm: (Picker picker, List value) {
+                        setState(() => {
+                        _datetime = DateTime.utc(0, 0, 0, value[0], value[1], value[2])});
+                        minutes2 = value[1];
+                        second2 = value[2];
                       },
                     ).showModal(context);
                   },
                   // タッチ検出対象のWidget
                   child: Text(
-                    '${_counter}',
+                    '${minutes2.toString().padLeft(2, '0')}:${second2.toString().padLeft(2, '0')}',
                     textAlign: TextAlign.center,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(fontWeight: FontWeight.bold),
@@ -166,30 +238,10 @@ class _MyHomePageState extends State<MyHomePage> {
               ],
             ),
             Padding(
-              padding: EdgeInsets.all(30),
+              padding: EdgeInsets.all(10),
             ),
             Row(
-              children: [
-                Row(
-                  children: [
-                    Icon(
-                      Icons.notifications,
-                    ),
-                    Icon(
-                      Icons.notifications,
-                    ),
-                  ],
-                ),
-                Padding(
-                  padding: EdgeInsets.all(30),
-                ),
-                Text("ベル2"),
-              ],
-            ),
-            Padding(
-              padding: EdgeInsets.all(30),
-            ),
-            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Row(
                   children: [
@@ -207,11 +259,31 @@ class _MyHomePageState extends State<MyHomePage> {
                 Padding(
                   padding: EdgeInsets.all(30),
                 ),
-                Text("ベル3"),
+                GestureDetector(
+                  onTap: () async {
+                    Picker(
+                      adapter: DateTimePickerAdapter(type: PickerDateTimeType.kHMS, value: _datetime, customColumnType: [3, 4, 5]),
+                      title: Text("Select Time"),
+                      onConfirm: (Picker picker, List value) {
+                        setState(() => {
+                        _datetime = DateTime.utc(0, 0, 0, value[0], value[1], value[2])});
+                        minutes3 = value[1];
+                        second3 = value[2];
+                      },
+                    ).showModal(context);
+                  },
+                  // タッチ検出対象のWidget
+                  child: Text(
+                    '${minutes3.toString().padLeft(2, '0')}:${second3.toString().padLeft(2, '0')}',
+                    textAlign: TextAlign.center,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
               ],
             ),
             Padding(
-              padding: EdgeInsets.all(60),
+              padding: EdgeInsets.all(30),
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -248,8 +320,6 @@ class _MyHomePageState extends State<MyHomePage> {
                     side: const BorderSide(),
                   ),
                   onPressed: () async {
-                    _audio.play('bell.mp3');
-                    await Future.delayed(Duration(milliseconds: 500));
                     _audio.play('bell.mp3');
                   },
                 ),
