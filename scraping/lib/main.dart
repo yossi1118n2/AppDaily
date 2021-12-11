@@ -1,21 +1,38 @@
 import 'package:flutter/material.dart';
+
+import 'package:html/dom.dart' as dom;
+import 'package:html/dom_parsing.dart';
+import 'package:html/parser.dart';
+
 import 'package:universal_html/controller.dart';
+// import 'package:universal_html/html.dart';
+// import 'package:universal_html/indexed_db.dart';
+// import 'package:universal_html/js.dart';
+// import 'package:universal_html/js_util.dart';
+// import 'package:universal_html/parsing.dart';
+// import 'package:universal_html/svg.dart';
+// import 'package:universal_html/web_audio.dart';
+// import 'package:universal_html/web_gl.dart';
 
 
 Future<void> main() async {
 
-  final controller = WindowController();
-  await controller.openHttp(
-    method: 'GET',
-    uri: Uri.parse('https://news.ycombinator.com/'),
-  );
-  final document = controller.window!.document;
-  final topStorytitle = document.querySelectorAll(".athing > .title").first.text;
-  print(topStorytitle);
+  // final controller = WindowController();
+  // await controller.openHttp(
+  //   method: 'GET',
+  //   uri: Uri.parse('https://note.com/n2_blog/n/n4ef8a03f93a5'),
+  // );
+  // final document = controller.window!.document;
+  // final topStorytitle = document.querySelectorAll("title").first.text;
+  // print(topStorytitle);
+  // final elements = document.querySelectorAll("h2");
+  // for (final elem in elements) {
+  //   print(elem.text);
+  //   // print(elem.getAttribute("href"));
+  // }
   runApp(const MyApp());
 
 }
-
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
@@ -61,65 +78,76 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+  late List<String> _element = [];
+  final _controller = WindowController();
 
-  void _incrementCounter() {
+  String title = "--";
+
+  @override
+  void initState(){
+    _updatepage();
+    super.initState();
+  }
+
+  Future<void> _updatepage() async {
+    await _controller.openHttp(
+      method: 'GET',
+      uri: Uri.parse('https://note.com/n2_blog/n/n4ef8a03f93a5'),
+    );
+    final document = _controller.window!.document;
+    final _topStorytitle = document.querySelectorAll("title").first.text;
+    
+    title = _topStorytitle ?? "--";
+    print(_topStorytitle);
+    final _elements = document.querySelectorAll("h2");
     setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
+      for (final elem in _elements) {
+        print(elem.text);
+        if(elem.text != null) {
+          _element.add(elem.text as String);
+        }else{
+          _element.add("non-text");
+        }
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
+
     return Scaffold(
       appBar: AppBar(
         // Here we take the value from the MyHomePage object that was created by
         // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+        title: Text(title),
       ),
       body: Center(
         // Center is a layout widget. It takes a single child and positions it
         // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Invoke "debug painting" (press "p" in the console, choose the
-          // "Toggle Debug Paint" action from the Flutter Inspector in Android
-          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-          // to see the wireframe for each widget.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
-            ),
-          ],
+        child: ListView.builder(
+          //後で指定する。
+          itemCount: _element.length,
+          itemBuilder: (BuildContext context, int index) {
+            return Column(
+              children: [
+                ListTile(
+                  leading: Icon(Icons.settings),
+                  title: Text(_element[index]),
+                  onTap: (){
+                    //Navigator.push(context, MaterialPageRoute(builder: (context) => Chatpage(name:titleList[index],uid: widget.user_id)));
+                  },
+                ),
+                Divider(),
+              ],
+            );
+          },
+
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
+        onPressed: () async {
+          _updatepage();
+        },
         tooltip: 'Increment',
         child: const Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
