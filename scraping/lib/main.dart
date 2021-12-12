@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'package:html/dom.dart' as dom;
 import 'package:html/dom_parsing.dart';
@@ -79,9 +80,12 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   late List<String> _element = [];
+  late List<String> _url_list = [];
   final _controller = WindowController();
 
   String title = "--";
+  String url_temp = "--";
+  String note_url = "https://note.com";
 
   @override
   void initState(){
@@ -90,26 +94,43 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> _updatepage() async {
+    _element = [];
+    _url_list = [];
     await _controller.openHttp(
       method: 'GET',
-      uri: Uri.parse('https://note.com/n2_blog/n/n4ef8a03f93a5'),
+      uri: Uri.parse('https://note.com/n2_blog'),
     );
     final document = _controller.window!.document;
     final _topStorytitle = document.querySelectorAll("title").first.text;
     
     title = _topStorytitle ?? "--";
     print(_topStorytitle);
-    final _elements = document.querySelectorAll("h2");
+    final _elements = document.querySelectorAll("h3 > a");
     setState(() {
       for (final elem in _elements) {
         print(elem.text);
+        print(elem.getAttribute("href"));
+        url_temp = elem.getAttribute("href") as String;
+        url_temp = note_url + url_temp;
+
         if(elem.text != null) {
           _element.add(elem.text as String);
+          _url_list.add(url_temp);
         }else{
           _element.add("non-text");
+          _url_list.add(note_url);
         }
       }
     });
+  }
+
+  // Future onLaunchUrl (String url) async {
+  //   if (await canLaunch(url)) {
+  //     await launch(url);
+  //   }
+  // }
+  void _launchURL(String _url) async {
+    if (!await launch(_url)) throw 'Could not launch $_url';
   }
 
   @override
@@ -134,6 +155,9 @@ class _MyHomePageState extends State<MyHomePage> {
                   leading: Icon(Icons.settings),
                   title: Text(_element[index]),
                   onTap: (){
+                    //safariを開く
+                    _launchURL(_url_list[index]);
+                    print(_url_list[index]);
                     //Navigator.push(context, MaterialPageRoute(builder: (context) => Chatpage(name:titleList[index],uid: widget.user_id)));
                   },
                 ),
