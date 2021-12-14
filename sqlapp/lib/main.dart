@@ -53,6 +53,8 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
   late Database database;
+  late String path;
+  List<String> name_list = ['--'];
   // Get a location using getDatabasesPath
 
   @override
@@ -61,7 +63,6 @@ class _MyHomePageState extends State<MyHomePage> {
     print("initState");
 
     _makedatabase();
-    _insertrecord();
   }
   void _incrementCounter() {
     setState(() {
@@ -71,13 +72,13 @@ class _MyHomePageState extends State<MyHomePage> {
       // _counter without calling setState(), then the build method would not be
       // called again, and so nothing would appear to happen.
       _counter++;
-      _updatarecord();
+      _insertrecord();
     });
   }
 
   Future<void> _makedatabase() async {
     var databasesPath = await getDatabasesPath();
-    String path = join(databasesPath, 'demo.db');
+    path = join(databasesPath, 'demo.db');
 
     // open the database
     database = await openDatabase(path, version: 1,
@@ -99,14 +100,30 @@ class _MyHomePageState extends State<MyHomePage> {
           ['another name', 12345678, 3.1416]);
       print('inserted2: $id2');
     });
+    List<Map> list = await database.rawQuery('SELECT * FROM Test');
+    setState(() {
+      name_list = [];
+      for(int i=0; i< list.length; i++){
+        name_list.add(list[i]['name']);
+      }
+    });
+
   }
 
   Future<void> _updatarecord() async {
     // Update some record
+
     int count = await database.rawUpdate(
         'UPDATE Test SET name = ?, value = ? WHERE name = ?',
         ['updated name', '9876', 'some name']);
     print('updated: $count');
+    List<Map> list = await database.rawQuery('SELECT * FROM Test');
+    setState(() {
+      name_list = [];
+      for(int i=0; i< list.length; i++){
+        name_list.add(list[i]['name']);
+      }
+    });
   }
 
   void _getrecorde() async{
@@ -116,9 +133,20 @@ class _MyHomePageState extends State<MyHomePage> {
       {'name': 'updated name', 'id': 1, 'value': 9876, 'num': 456.789},
       {'name': 'another name', 'id': 2, 'value': 12345678, 'num': 3.1416}
     ];
-    print(list);
+
     print(expectedList);
-    assert(const DeepCollectionEquality().equals(list, expectedList));
+    setState(() {
+      name_list = [];
+      for(int i=0; i< list.length; i++){
+        name_list.add(list[i]['name']);
+      }
+    });
+    //assert(const DeepCollectionEquality().equals(list, expectedList));
+  }
+
+  Future<void> _delete() async {
+    // Delete a record
+    deleteDatabase(path);
   }
 
 
@@ -157,7 +185,6 @@ class _MyHomePageState extends State<MyHomePage> {
           // center the children vertically; the main axis here is the vertical
           // axis because Columns are vertical (the cross axis would be
           // horizontal).
-          mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             const Text(
               'You have pushed the button this many times:',
@@ -166,11 +193,54 @@ class _MyHomePageState extends State<MyHomePage> {
               '$_counter',
               style: Theme.of(context).textTheme.headline4,
             ),
+            ElevatedButton(
+              child: const Text('データベースにデータを挿入'),
+              style: ElevatedButton.styleFrom(
+                primary: Colors.red,
+                onPrimary: Colors.black,
+                shape: const StadiumBorder(),
+              ),
+              onPressed: () {
+                _insertrecord();
+              },
+            ),
+            ElevatedButton(
+              child: const Text('データベースをリセット'),
+              style: ElevatedButton.styleFrom(
+                primary: Colors.red,
+                onPrimary: Colors.black,
+                shape: const StadiumBorder(),
+              ),
+              onPressed: () {
+                _delete();
+                _makedatabase();
+              },
+            ),
+            ElevatedButton(
+              child: const Text('データベースを更新'),
+              style: ElevatedButton.styleFrom(
+                primary: Colors.red,
+                onPrimary: Colors.black,
+                shape: const StadiumBorder(),
+              ),
+              onPressed: () {
+                _updatarecord();
+              },
+            ),
+            Container(
+              height: 300,
+              child: ListView.builder(
+                itemCount: name_list.length,
+                itemBuilder: (context, index) {
+                  return Text(name_list[index]);
+                },
+              ),
+            )
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
+        onPressed: _getrecorde,
         tooltip: 'Increment',
         child: const Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
