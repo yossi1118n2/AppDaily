@@ -82,29 +82,46 @@ class _MyHomePageState extends State<MyHomePage> {
 
     // open the database
     database = await openDatabase(path, version: 1,
+        // onCreate: (Database db, int version) async {
+        //   // When creating the db, create the table
+        //   await db.execute(
+        //       'CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT, value INTEGER, num REAL)');
+        // });
         onCreate: (Database db, int version) async {
           // When creating the db, create the table
           await db.execute(
-              'CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT, value INTEGER, num REAL)');
+              'CREATE TABLE Idea (id INTEGER PRIMARY KEY, genre INTEGER, title TEXT, importance INTEGER, lastupdate INTEGER, status INTEGER, memo1 TEXT, memo1update TEXT, memo2 TEXT, memo2update TEXT, memo3 TEXT, memo3update TEXT, memo4 TEXT, memo4update TEXT)');
         });
   }
 
   Future<void> _insertrecord() async {
+    int  _genre = 0;
+    String _title = 'titleですよー';
+    int _importance = 1;
+    int _lastupdate = 0;
+    int _status = 0;
+    String _memo1 = 'memomemo';
+    int _memo1update = 0;
+
+
+
     // Insert some records in a transaction
     await database.transaction((txn) async {
-      int id1 = await txn.rawInsert(
-          'INSERT INTO Test(name, value, num) VALUES("some name", 1234, 456.789)');
-      print('inserted1: $id1');
-      int id2 = await txn.rawInsert(
-          'INSERT INTO Test(name, value, num) VALUES(?, ?, ?)',
-          ['another name', 12345678, 3.1416]);
-      print('inserted2: $id2');
+      // int id1 = await txn.rawInsert(
+      //     'INSERT INTO Test(name, value, num) VALUES("some name", 1234, 456.789)');
+      // print('inserted1: $id1');
+      int id = await txn.rawInsert(
+          // 'INSERT INTO Test(name, value, num) VALUES(?, ?, ?)',
+          // ['another name', 12345678, 3.1416]);
+          'INSERT INTO Idea(genre, title, importance, lastupdate, status, memo1, memo1update, memo2, memo2update, memo3, memo3update, memo4, memo4update) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+          [_genre, '${_title}', _importance, _lastupdate, _status, _memo1, _memo1update, 'null', 0, 'null', 0, 'null', 0]);
+      print('inserted2: $id');
     });
-    List<Map> list = await database.rawQuery('SELECT * FROM Test');
+    List<Map> list = await database.rawQuery('SELECT * FROM Idea');
     setState(() {
       name_list = [];
       for(int i=0; i< list.length; i++){
-        name_list.add(list[i]['name']);
+        name_list.add(list[i]['title']);
       }
     });
 
