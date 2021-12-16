@@ -3,6 +3,8 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:collection/collection.dart';
 
+import 'addlist.dart';
+
 void main() {
   runApp(const MyApp());
 }
@@ -127,31 +129,39 @@ class _MyHomePageState extends State<MyHomePage> {
 
   }
 
-  Future<void> _updatarecord() async {
-    // Update some record
-
-    int count = await database.rawUpdate(
-        'UPDATE Test SET name = ?, value = ? WHERE name = ?',
-        ['updated name', '9876', 'some name']);
-    print('updated: $count');
-    List<Map> list = await database.rawQuery('SELECT * FROM Test');
-    setState(() {
-      name_list = [];
-      for(int i=0; i< list.length; i++){
-        name_list.add(list[i]['name']);
-      }
-    });
-  }
+  // Future<void> _updatarecord() async {
+  //   // Update some record
+  //
+  //   // int count = await database.rawUpdate(
+  //   //     'UPDATE Test SET name = ?, value = ? WHERE name = ?',
+  //   //     ['updated name', '9876', 'some name']);
+  //   // print('updated: $count');
+  //   // List<Map> list = await database.rawQuery('SELECT * FROM Test');
+  //
+  //   int count = await database.rawUpdate(
+  //       'UPDATE Idea SET name = ?, value = ? WHERE name = ?',
+  //       ['updated name', '9876', 'some name']);
+  //   print('updated: $count');
+  //   List<Map> list = await database.rawQuery('SELECT * FROM Idea');
+  //
+  //   setState(() {
+  //     name_list = [];
+  //     for(int i=0; i< list.length; i++){
+  //       name_list.add(list[i]['name']);
+  //     }
+  //   });
+  // }
 
   void _getrecorde() async{
     // Get the records
     List<Map> list = await database.rawQuery('SELECT * FROM Test');
-    List<Map> expectedList = [
-      {'name': 'updated name', 'id': 1, 'value': 9876, 'num': 456.789},
-      {'name': 'another name', 'id': 2, 'value': 12345678, 'num': 3.1416}
-    ];
+    // List<Map> expectedList = [
+    //   {'name': 'updated name', 'id': 1, 'value': 9876, 'num': 456.789},
+    //   {'name': 'another name', 'id': 2, 'value': 12345678, 'num': 3.1416}
+    // ];
 
-    print(expectedList);
+    // print(expectedList);
+
     setState(() {
       name_list = [];
       for(int i=0; i< list.length; i++){
@@ -241,7 +251,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 shape: const StadiumBorder(),
               ),
               onPressed: () {
-                _updatarecord();
+                // _updatarecord();
               },
             ),
             Container(
@@ -257,8 +267,14 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _getrecorde,
-        tooltip: 'Increment',
+        onPressed: (){
+          // （1） 指定した画面に遷移する
+          Navigator.push(context, MaterialPageRoute(
+            // （2） 実際に表示するページ(ウィジェット)を指定する
+              builder: (context) => addlist()
+          ));
+        },
+        tooltip: 'Add',
         child: const Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
