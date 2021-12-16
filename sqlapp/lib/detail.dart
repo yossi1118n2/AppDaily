@@ -9,6 +9,7 @@ class detail extends StatefulWidget {
 }
 
 class _detailState extends State<detail> {
+
   @override
   Widget build(BuildContext context) {
     return Container();
