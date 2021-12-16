@@ -57,7 +57,19 @@ class _MyHomePageState extends State<MyHomePage> {
   late Database database;
   late String path;
   List<String> name_list = ['--'];
+  List<PrintList> printlist = [];
+
+  int  _genre = 0;
+  String _title = 'titleですよー';
+  int _importance = 1;
+  int _lastupdate = 0;
+  int _status = 0;
+  String _memo1 = 'memomemo';
+  int _memo1update = 0;
+
   // Get a location using getDatabasesPath
+
+
 
   @override
   void initState() {
@@ -97,13 +109,6 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> _insertrecord() async {
-    int  _genre = 0;
-    String _title = 'titleですよー';
-    int _importance = 1;
-    int _lastupdate = 0;
-    int _status = 0;
-    String _memo1 = 'memomemo';
-    int _memo1update = 0;
 
 
 
@@ -121,12 +126,22 @@ class _MyHomePageState extends State<MyHomePage> {
     });
     List<Map> list = await database.rawQuery('SELECT * FROM Idea');
     setState(() {
-      name_list = [];
+      printlist = [];
+      if(list.length == 0){
+        PrintList printlist_temp = PrintList(title: _title, subTitle: _memo1, icon: Icons.add_a_photo , tileColor: Colors.redAccent);
+        printlist.add(printlist_temp);
+      }
       for(int i=0; i< list.length; i++){
-        name_list.add(list[i]['title']);
+        PrintList printlist_temp = PrintList(title: _title, subTitle: _memo1, icon: Icons.add_a_photo , tileColor: Colors.redAccent);
+        printlist.add(printlist_temp);
       }
     });
 
+  }
+
+  void initprint(){
+    PrintList printlist_temp = PrintList(title: _title, subTitle: _memo1, icon: Icons.add_a_photo , tileColor: Colors.redAccent);
+    printlist.add(printlist_temp);
   }
 
   // Future<void> _updatarecord() async {
@@ -161,15 +176,28 @@ class _MyHomePageState extends State<MyHomePage> {
     // ];
 
     // print(expectedList);
-
     setState(() {
-      name_list = [];
+      printlist = [];
+      if(list.length == 0){
+        PrintList printlist_temp = PrintList(title: _title, subTitle: _memo1, icon: Icons.add_a_photo , tileColor: Colors.redAccent);
+        printlist.add(printlist_temp);
+      }
       for(int i=0; i< list.length; i++){
-        name_list.add(list[i]['name']);
+        _title = list[i]['title'];
+        _memo1 = list[i]['memo1'];
+        PrintList printlist_temp = PrintList(title: _title, subTitle: _memo1, icon: Icons.add_a_photo , tileColor: Colors.redAccent);
+        printlist.add(printlist_temp);
       }
     });
+    // setState(() {
+    //   name_list = [];
+    //   for(int i=0; i< list.length; i++){
+    //     name_list.add(list[i]['name']);
+    //   }
+    // });
     //assert(const DeepCollectionEquality().equals(list, expectedList));
   }
+
 
   Future<void> _delete() async {
     // Delete a record
@@ -198,39 +226,18 @@ class _MyHomePageState extends State<MyHomePage> {
         // Center is a layout widget. It takes a single child and positions it
         // in the middle of the parent.
         child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Invoke "debug painting" (press "p" in the console, choose the
-          // "Toggle Debug Paint" action from the Flutter Inspector in Android
-          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-          // to see the wireframe for each widget.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
           children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
-            ),
-            ElevatedButton(
-              child: const Text('データベースにデータを挿入'),
-              style: ElevatedButton.styleFrom(
-                primary: Colors.red,
-                onPrimary: Colors.black,
-                shape: const StadiumBorder(),
-              ),
-              onPressed: () {
-                _insertrecord();
-              },
-            ),
+            // ElevatedButton(
+            //   child: const Text('データベースにデータを挿入'),
+            //   style: ElevatedButton.styleFrom(
+            //     primary: Colors.red,
+            //     onPrimary: Colors.black,
+            //     shape: const StadiumBorder(),
+            //   ),
+            //   onPressed: () {
+            //     _insertrecord();
+            //   },
+            // ),
             ElevatedButton(
               child: const Text('データベースをリセット'),
               style: ElevatedButton.styleFrom(
@@ -251,18 +258,44 @@ class _MyHomePageState extends State<MyHomePage> {
                 shape: const StadiumBorder(),
               ),
               onPressed: () {
-                // _updatarecord();
+                _getrecorde();
               },
             ),
+            // Container(
+            //   height: 300,
+            //   child: ListView.builder(
+            //     itemCount: name_list.length,
+            //     itemBuilder: (context, index) {
+            //       return Text(name_list[index]);
+            //     },
+            //   ),
+            // )
             Container(
               height: 300,
-              child: ListView.builder(
-                itemCount: name_list.length,
-                itemBuilder: (context, index) {
-                  return Text(name_list[index]);
+              child: ListView.separated(
+                padding: EdgeInsets.all(5),
+                itemBuilder: (BuildContext context, int index) {
+                  //ここを変える。
+                  // var sub = state[index];
+                  return SubListItem(
+                    title: printlist[index].title,
+                    subTitle: printlist[index].subTitle,
+                    tileColor: printlist[index].tileColor,
+                    leading: ConstrainedBox(
+                        constraints: BoxConstraints(
+                            minHeight: 44,
+                            minWidth: 34,
+                            maxHeight: 64,
+                            maxWidth: 54),
+                        child: Icon(printlist[index].icon)),
+                  );
                 },
+                separatorBuilder: (BuildContext context, int index) {
+                  return SizedBox(height: 10);
+                },
+                itemCount: printlist.length,
               ),
-            )
+            ),
           ],
         ),
       ),
@@ -279,4 +312,35 @@ class _MyHomePageState extends State<MyHomePage> {
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
+}
+
+class SubListItem extends StatelessWidget {
+  final String title;
+  final String subTitle;
+  final Widget leading;
+  final Color tileColor;
+
+  SubListItem({required this.title, required this.subTitle, required this.leading, required this.tileColor});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      title: Text(title),
+      subtitle: Text(subTitle),
+      leading: leading,
+      onTap: () => {},
+      onLongPress: () => {},
+      trailing: Icon(Icons.more_vert),
+    );
+  }
+}
+
+class PrintList {
+  //最終的に必要なやつ
+  final String title;
+  final String subTitle;
+  final Color tileColor;
+  final IconData icon;
+
+  PrintList({required this.title, required this.subTitle, required this.icon, required this.tileColor});
 }
