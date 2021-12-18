@@ -72,24 +72,25 @@ class _addlistState extends State<addlist> {
   void setItems() {
     _items
       ..add(DropdownMenuItem(
-        child: Text('ジャンルなし', style: TextStyle(fontSize: 40.0),),
+        child: Text('ジャンルなし', style: TextStyle(fontSize: 10.0),),
         value: 1,
       ))
       ..add(DropdownMenuItem(
-        child: Text('研究関連', style: TextStyle(fontSize: 40.0),),
+        child: Text('研究関連', style: TextStyle(fontSize: 10.0),),
         value: 2,
       ))
       ..add(DropdownMenuItem(
-        child: Text('趣味関連', style: TextStyle(fontSize: 40.0),),
+        child: Text('趣味関連', style: TextStyle(fontSize: 10.0),),
         value: 3,
       ))
       ..add(DropdownMenuItem(
-        child: Text('スポーツ関連', style: TextStyle(fontSize: 40.0),),
+        child: Text('スポーツ関連', style: TextStyle(fontSize: 10.0),),
         value: 4,
       ));
   }
 
   String text = '--';
+  double _sliderValue = 3;
 
 
   @override
@@ -128,13 +129,14 @@ class _addlistState extends State<addlist> {
             ),
             Text('重要度'),
             Slider(
-              value: 1,
+              value: _sliderValue,
               min: 1,
               max: 5,
               divisions: 4,
               onChanged: (double value) {
                 setState(() {
                   _importance = value.toInt();
+                  _sliderValue = value;
                 });
               },
             ),
@@ -150,9 +152,16 @@ class _addlistState extends State<addlist> {
           ],
         ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _insertrecord,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+        tooltip: 'save',
+        child: const Icon(Icons.save),
+        onPressed: (){
+          // （1） 指定した画面に遷移する
+          _insertrecord();
+          // SnackBarを表示する
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text('保存完了'),
+          ));
+        },
       ),
     );
   }

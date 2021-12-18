@@ -4,6 +4,7 @@ import 'package:path/path.dart';
 import 'package:collection/collection.dart';
 
 import 'addlist.dart';
+import 'detail.dart';
 
 void main() {
   runApp(const MyApp());
@@ -169,7 +170,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _getrecorde() async{
     // Get the records
-    List<Map> list = await database.rawQuery('SELECT * FROM Test');
+    List<Map> list = await database.rawQuery('SELECT * FROM Idea');
     // List<Map> expectedList = [
     //   {'name': 'updated name', 'id': 1, 'value': 9876, 'num': 456.789},
     //   {'name': 'another name', 'id': 2, 'value': 12345678, 'num': 3.1416}
@@ -288,6 +289,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             maxHeight: 64,
                             maxWidth: 54),
                         child: Icon(printlist[index].icon)),
+
                   );
                 },
                 separatorBuilder: (BuildContext context, int index) {
@@ -307,7 +309,7 @@ class _MyHomePageState extends State<MyHomePage> {
               builder: (context) => addlist()
           ));
         },
-        tooltip: 'Add',
+        tooltip: 'Save',
         child: const Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
@@ -328,8 +330,15 @@ class SubListItem extends StatelessWidget {
       title: Text(title),
       subtitle: Text(subTitle),
       leading: leading,
-      onTap: () => {},
-      onLongPress: () => {},
+      onTap: () => {
+
+      },
+      onLongPress: () => {
+        Navigator.push(context, MaterialPageRoute(
+        // （2） 実際に表示するページ(ウィジェット)を指定する
+        builder: (context) => detail(title: title)
+        )),
+      },
       trailing: Icon(Icons.more_vert),
     );
   }
