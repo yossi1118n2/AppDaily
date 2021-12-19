@@ -111,8 +111,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<void> _insertrecord() async {
 
-
-
     // Insert some records in a transaction
     await database.transaction((txn) async {
       // int id1 = await txn.rawInsert(
@@ -218,16 +216,42 @@ class _MyHomePageState extends State<MyHomePage> {
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
     return Scaffold(
+      drawer: Drawer(
+        child: ListView.builder(
+          itemCount: 1,
+          itemBuilder: (BuildContext context, int index) {
+            return ListTile(
+              title: Text("データベースをリセット"),
+              onLongPress: (){
+                _delete();
+                _makedatabase();
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text('データベースを削除しました'),
+                ));
+              },
+            );
+          },
+        ),
+      ),
       appBar: AppBar(
         // Here we take the value from the MyHomePage object that was created by
         // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.update),
+            onPressed: () => setState(() {
+              _getrecorde();
+            }),
+          ),
+        ],
       ),
       body: Center(
         // Center is a layout widget. It takes a single child and positions it
         // in the middle of the parent.
         child: Column(
           children: <Widget>[
+
             // ElevatedButton(
             //   child: const Text('データベースにデータを挿入'),
             //   style: ElevatedButton.styleFrom(
@@ -239,29 +263,29 @@ class _MyHomePageState extends State<MyHomePage> {
             //     _insertrecord();
             //   },
             // ),
-            ElevatedButton(
-              child: const Text('データベースをリセット'),
-              style: ElevatedButton.styleFrom(
-                primary: Colors.red,
-                onPrimary: Colors.black,
-                shape: const StadiumBorder(),
-              ),
-              onPressed: () {
-                _delete();
-                _makedatabase();
-              },
-            ),
-            ElevatedButton(
-              child: const Text('データベースを更新'),
-              style: ElevatedButton.styleFrom(
-                primary: Colors.red,
-                onPrimary: Colors.black,
-                shape: const StadiumBorder(),
-              ),
-              onPressed: () {
-                _getrecorde();
-              },
-            ),
+            // ElevatedButton(
+            //   child: const Text('データベースをリセット'),
+            //   style: ElevatedButton.styleFrom(
+            //     primary: Colors.red,
+            //     onPrimary: Colors.black,
+            //     shape: const StadiumBorder(),
+            //   ),
+            //   onPressed: () {
+            //     _delete();
+            //     _makedatabase();
+            //   },
+            // ),
+            // ElevatedButton(
+            //   child: const Text('データベースを更新'),
+            //   style: ElevatedButton.styleFrom(
+            //     primary: Colors.red,
+            //     onPrimary: Colors.black,
+            //     shape: const StadiumBorder(),
+            //   ),
+            //   onPressed: () {
+            //     _getrecorde();
+            //   },
+            // ),
             // Container(
             //   height: 300,
             //   child: ListView.builder(
@@ -334,6 +358,8 @@ class SubListItem extends StatelessWidget {
 
       },
       onLongPress: () => {
+        print('title'),
+        print(title),
         Navigator.push(context, MaterialPageRoute(
         // （2） 実際に表示するページ(ウィジェット)を指定する
         builder: (context) => detail(title: title)
