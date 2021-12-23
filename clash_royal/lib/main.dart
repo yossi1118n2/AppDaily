@@ -4,6 +4,8 @@ import 'package:http/http.dart' as http;
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:http/http.dart';
+
 void main() {
   runApp(const MyApp());
 }
@@ -35,14 +37,13 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
+  String adress_test = '--';
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
+  Future<void> _incrementCounter() async{
+    var result = await http.get(Uri.parse('https://zipcloud.ibsnet.co.jp/api/search?zipcode=5300057'));
+    print(result.body);
+    adress_test = jsonDecode(result.body)['results'][0]['address3'];
+    setState((){
       _counter++;
     });
   }
@@ -57,8 +58,8 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
+            Text(
+              '住所 -> ${adress_test}',
             ),
             Text(
               '$_counter',
