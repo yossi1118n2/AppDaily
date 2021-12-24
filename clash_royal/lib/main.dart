@@ -37,16 +37,21 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
-  String adress_test = '--';
-
+  String adress1 = '--';
+  String adress2 = '--';
+  String adress3 = '--';
   Future<void> _incrementCounter() async{
-    var result = await http.get(Uri.parse('https://zipcloud.ibsnet.co.jp/api/search?zipcode=5300057'));
+    var result = await http.get(Uri.parse('https://zipcloud.ibsnet.co.jp/api/search?zipcode=5080001'));
+    // var result = await http.get(Uri.parse('https://developer.clashroyale.com/cards'));
     print(result.body);
-    adress_test = jsonDecode(result.body)['results'][0]['address3'];
     setState((){
+      adress1 = jsonDecode(result.body)['results'][0]['address1'];
+      adress2 = jsonDecode(result.body)['results'][0]['address2'];
+      adress3 = jsonDecode(result.body)['results'][0]['address3'];
       _counter++;
     });
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +64,7 @@ class _MyHomePageState extends State<MyHomePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Text(
-              '住所 -> ${adress_test}',
+              '住所 -> ${adress1},${adress2}, ${adress3}',
             ),
             Text(
               '$_counter',
