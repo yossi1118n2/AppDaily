@@ -3,12 +3,18 @@ import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 import 'package:http/http.dart' as http;
 import 'dart:async';
 import 'dart:convert';
+import 'package:provider/provider.dart';
 
-import 'package:http/http.dart';
-
-void main() {
-  runApp(const MyApp());
-}
+void main() => runApp(
+    MultiProvider(
+      // プロバイダ
+      providers: [
+        ChangeNotifierProvider(create: (_) => WikipediaProvider()),
+      ],
+      // アプリケーション
+      child: MyApp(),
+    )
+);
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
@@ -21,63 +27,100 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'クラロワアプリ'),
+      home: ArticleList(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key, required this.title}) : super(key: key);
 
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-  String adress1 = '--';
-  String adress2 = '--';
-  String adress3 = '--';
-  Future<void> _incrementCounter() async{
-    var result = await http.get(Uri.parse('https://zipcloud.ibsnet.co.jp/api/search?zipcode=5080001'));
-    // var result = await http.get(Uri.parse('https://developer.clashroyale.com/cards'));
-    print(result.body);
-    setState((){
-      adress1 = jsonDecode(result.body)['results'][0]['address1'];
-      adress2 = jsonDecode(result.body)['results'][0]['address2'];
-      adress3 = jsonDecode(result.body)['results'][0]['address3'];
-      _counter++;
-    });
-  }
-
-
+/// Wikipedia記事リスト
+class ArticleList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              '住所 -> ${adress1},${adress2}, ${adress3}',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+    // API呼び出し
+    context.read<WikipediaProvider>().init();
+    // Consumer
+    return Consumer<WikipediaProvider>(
+      builder: (context, provider, child) {
+        return RefreshIndicator(
+          onRefresh: () => provider.init(),
+          child: ListView.builder(
+            itemCount: provider.items.length,
+            itemBuilder: (context, index) {
+              return Card(
+                child: ListTile(
+                title: Text(provider.items[index].title),
+              ),
+              );
+            },
+          ),
+        );
+      },
     );
   }
+}
+
+/// Wikipediaプロバイダ
+class WikipediaProvider extends ChangeNotifier {
+
+  // 記事リスト
+  List<WikipediaArticle> items = [];
+
+  // 記事リストを初期化する
+  Future<void> init() async {
+    // 記事リストをAPIから取得する
+    items = await WikipediaApi().request();
+    // リスナーに通知する
+    notifyListeners();
+  }
+}
+
+/// Wikipediaの記事を取得するAPI
+class WikipediaApi {
+  static const _domain = 'ja.wikipedia.org';
+  static const _path = '/w/api.php';
+  static const _params = {
+    'format': 'json',
+    'action': 'query',
+    'list': 'random',
+    'rnnamespace': '0',
+    'rnlimit': '5',
+  };
+
+  // インスタンス
+  static final WikipediaApi _instance = WikipediaApi._();
+
+  // コンストラクタ
+  WikipediaApi._();
+
+  // ファクトリコンストラクタ
+  factory WikipediaApi() => _instance;
+
+  // リクエスト
+  Future<List<WikipediaArticle>> request() async {
+    var url = Uri.https(_domain, _path, _params);
+    print('url');
+    print(url);
+    //なるほど、APIってURLを使って要素を指定するのか、よくわかった。
+    http.Response response = await http.get(url);
+
+    var parsed = json.decode(response.body);
+    var data = parsed['query']['random'] as List;
+    return data.map((e) => WikipediaArticle.fromJson(e)).toList();
+  }
+}
+/// Wikipedia記事モデル
+class WikipediaArticle {
+  // ID
+  final int id;
+  // タイトル
+  String title;
+
+  // コンストラクタ
+  WikipediaArticle({required this.id, required this.title});
+
+  // コンストラクタ（JSON）
+  WikipediaArticle.fromJson(Map<String, dynamic> json) :
+        this.id = json['id'] as int,
+        this.title = json['title'].toString();
 }
