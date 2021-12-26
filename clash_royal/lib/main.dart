@@ -79,12 +79,23 @@ class WikipediaProvider extends ChangeNotifier {
 class WikipediaApi {
   static const _domain = 'ja.wikipedia.org';
   static const _path = '/w/api.php';
+  // //ランダムに取得する場合
+  // static const _params = {
+  //   'format': 'json',
+  //   'action': 'query',
+  //   'list': 'random',
+  //   'rnnamespace': '0',
+  //   'rnlimit': '5',
+  // };
+
+  //
   static const _params = {
+    'srsearch': '立命館大学',
     'format': 'json',
     'action': 'query',
-    'list': 'random',
-    'rnnamespace': '0',
-    'rnlimit': '5',
+    'list': 'search',
+    'srnamespace': '0',
+    'srlimit': '5',
   };
 
   // インスタンス
@@ -93,19 +104,31 @@ class WikipediaApi {
   // コンストラクタ
   WikipediaApi._();
 
-  // ファクトリコンストラクタ
-  factory WikipediaApi() => _instance;
+  // ファクトリコンストラクタ(アロー関数はまだ慣れないので、書き換えた)
+  // factory WikipediaApi() => _instance;
+  factory WikipediaApi(){
+    return _instance;
+  }
 
   // リクエスト
   Future<List<WikipediaArticle>> request() async {
+    //uri.httpsでurlを作成する。
     var url = Uri.https(_domain, _path, _params);
     print('url');
     print(url);
-    //なるほど、APIってURLを使って要素を指定するのか、よくわかった。
+    //なるほど、APIってURLを使って要素を指定するのか、よくわかった
     http.Response response = await http.get(url);
 
+    print('response');
+    print(response);
+    //decodeする
     var parsed = json.decode(response.body);
-    var data = parsed['query']['random'] as List;
+    print('decoded');
+    print(parsed);
+    var data = parsed['query']['search'] as List;
+    //var data = parsed['search']['title'] as List;
+    print('data');
+    print(data);
     return data.map((e) => WikipediaArticle.fromJson(e)).toList();
   }
 }
@@ -116,11 +139,12 @@ class WikipediaArticle {
   // タイトル
   String title;
 
-  // コンストラクタ
+  // コンストラクタ(引数がidとtitleの時のコンストラクタ)
   WikipediaArticle({required this.id, required this.title});
 
-  // コンストラクタ（JSON）
+  // コンストラクタ（JSON）(引数がMapの時のコンストラクタ)
   WikipediaArticle.fromJson(Map<String, dynamic> json) :
-        this.id = json['id'] as int,
+        this.id = json['pageid'] as int,
+        // this.id = json['id'] as int,
         this.title = json['title'].toString();
 }
