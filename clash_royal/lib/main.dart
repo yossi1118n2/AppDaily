@@ -7,6 +7,9 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:provider/provider.dart';
 
+import 'package:path/path.dart';
+import 'package:sqflite/sqflite.dart';
+
 void main() => runApp(
     MultiProvider(
       // プロバイダ
@@ -66,6 +69,10 @@ class ArticleList extends StatelessWidget {
 /// Wikipediaプロバイダ
 class WikipediaProvider extends ChangeNotifier {
 
+  int _counter = 0;
+  late Database database;
+  late String path;
+
 
   // 記事リストを初期化する
   Future<void> init() async {
@@ -74,6 +81,87 @@ class WikipediaProvider extends ChangeNotifier {
     // リスナーに通知する
     notifyListeners();
   }
+
+  Future<void> _makedatabase() async {
+    var databasesPath = await getDatabasesPath();
+    path = join(databasesPath, 'demo.db');
+
+    // open the database
+    database = await openDatabase(path, version: 1,
+        onCreate: (Database db, int version) async {
+          // When creating the db, create the table
+          await db.execute(
+              'CREATE TABLE Idea ('
+                  'tag INTEGER PRIMARY KEY, '
+                  'name TEXT, '
+                  'trophy INTEGER, '
+                  'isMember INTEGER, '
+                  'contribution INTEGER, '
+                  'medal1 INTEGER, '
+                  'useddeck1 INTEGER, '
+                  'season1 INTEGER, '
+                  'week1 INTEGER, '
+                  'medal2 INTEGER, '
+                  'useddeck2 INTEGER, '
+                  'season2 INTEGER, '
+                  'week2 INTEGER, '
+                  'medal3 INTEGER, '
+                  'useddeck3 INTEGER, '
+                  'season3 INTEGER, '
+                  'week3 INTEGER, '
+                  'medal4 INTEGER, '
+                  'useddeck4 INTEGER, '
+                  'season4 INTEGER, '
+                  'week4 INTEGER, '
+                  'medal5 INTEGER, '
+                  'useddeck5 INTEGER, '
+                  'season5 INTEGER, '
+                  'week5 INTEGER, '
+                  'totalmedal INTEGER, '
+                  'donate1 INTEGER, '
+                  'week1 INTEGER, '
+                  'donate2 INTEGER, '
+                  'week2 INTEGER, '
+                  'donate3 INTEGER, '
+                  'week3 INTEGER, '
+                  'donate4 INTEGER, '
+                  'week4 INTEGER, '
+                  'totaldonate INTEGER, '
+                  'position TEXT, '
+                  'pastcontribution INTEGER'
+                  ')');
+        });
+  }
+
+  Future<void> _insertrecord() async {
+
+    // Insert some records in a transaction
+    await database.transaction((txn) async {
+      // int id1 = await txn.rawInsert(
+      //     'INSERT INTO Test(name, value, num) VALUES("some name", 1234, 456.789)');
+      // print('inserted1: $id1');
+
+      int id = await txn.rawInsert(
+        // 'INSERT INTO Test(name, value, num) VALUES(?, ?, ?)',
+        // ['another name', 12345678, 3.1416]);
+          'INSERT INTO Idea(tag, name) VALUES(?, ?)',
+          [111, 'フェリス']);
+    });
+    List<Map> list = await database.rawQuery('SELECT * FROM Idea');
+    // setState(() {
+    //   printlist = [];
+    //   if(list.length == 0){
+    //     PrintList printlist_temp = PrintList(title: _title, subTitle: _memo1, icon: Icons.add_a_photo , tileColor: Colors.redAccent);
+    //     printlist.add(printlist_temp);
+    //   }
+    //   for(int i=0; i< list.length; i++){
+    //     PrintList printlist_temp = PrintList(title: _title, subTitle: _memo1, icon: Icons.add_a_photo , tileColor: Colors.redAccent);
+    //     printlist.add(printlist_temp);
+    //   }
+    // });
+
+  }
+
 }
 
 /// Wikipediaの記事を取得するAPI

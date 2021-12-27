@@ -37,6 +37,8 @@ dependencies:
   dart_jsonwebtoken: ^2.4.0
   http: ^0.13.4
   provider: ^6.0.1
+  sqflite: ^2.0.1
+  path:
 
 dev_dependencies:
   flutter_test:
