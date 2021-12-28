@@ -14,7 +14,7 @@ void main() => runApp(
     MultiProvider(
       // プロバイダ
       providers: [
-        ChangeNotifierProvider(create: (_) => WikipediaProvider()),
+        ChangeNotifierProvider(create: (_) => ClashProvider()),
       ],
       // アプリケーション
       child: MyApp(),
@@ -43,41 +43,59 @@ class ArticleList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // API呼び出し
-    context.read<WikipediaProvider>().init();
-    return Scaffold(body:Container());
-    // Consumer
-    // return Consumer<WikipediaProvider>(
-    //   builder: (context, provider, child) {
-    //     return RefreshIndicator(
-    //       onRefresh: () => provider.init(),
-    //       child: ListView.builder(
-    //         itemCount: provider.items.length,
-    //         itemBuilder: (context, index) {
-    //           return Card(
-    //             child: ListTile(
-    //             title: Text(provider.items[index].title),
-    //           ),
-    //           );
-    //         },
-    //       ),
-    //     );
-    //   },
-    // );
+    context.read<ClashProvider>().init();
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Book List'),
+      ),
+      body: Center(
+          child:Expanded(
+            child: SizedBox(
+            height: 200,
+            child: Column(
+              children: <Widget>[
+                Consumer<ClashProvider>(
+                  builder: (context, provider, child) {
+                    return RefreshIndicator(
+                      onRefresh: () => provider.init(),
+                      child: ListView.builder(
+                        itemCount: provider.items.length,
+                        itemBuilder: (context, index) {
+                          return Card(
+                            child: ListTile(
+                              title: Text(provider.items[index].name),
+                            ),
+                          );
+                        },
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+      ),
+      ),
+    );
   }
 }
 
 /// Wikipediaプロバイダ
-class WikipediaProvider extends ChangeNotifier {
+class ClashProvider extends ChangeNotifier {
 
   int _counter = 0;
   late Database database;
   late String path;
 
+  List<Clan> items = [];
+
 
   // 記事リストを初期化する
   Future<void> init() async {
     // 記事リストをAPIから取得する
-    Clan items = await WikipediaApi().request();
+    items = await ClashApi().request();
+    print('items');
+    print(items[3].name);
     // リスナーに通知する
     notifyListeners();
   }
@@ -165,8 +183,8 @@ class WikipediaProvider extends ChangeNotifier {
 }
 
 /// Wikipediaの記事を取得するAPI
-class WikipediaApi {
-
+class ClashApi {
+  String _token_in_kuresuto = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6IjllNjljNWU2LTZkMGItNDdmNS1iZTliLTQ2ZDk4YTZkNDZmMiIsImlhdCI6MTY0MDY5ODY5Nywic3ViIjoiZGV2ZWxvcGVyL2FmM2ExZTQ3LTI2OGQtNTI0Mi01ZjA3LTE5MmVjNWFlMTBhNyIsInNjb3BlcyI6WyJyb3lhbGUiXSwibGltaXRzIjpbeyJ0aWVyIjoiZGV2ZWxvcGVyL3NpbHZlciIsInR5cGUiOiJ0aHJvdHRsaW5nIn0seyJjaWRycyI6WyI1OC4xNTcuMjAwLjExOSJdLCJ0eXBlIjoiY2xpZW50In1dfQ.taa2NOpaeKIzuoCN7Fr1CZbOw_OKz-8bNQOQLV1FPJofA87KML34RZF60rBF-LMlqm_VSwxKrN_o1tt9Zkm84Q';
   String _token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6ImY0N2FhYjM0LTZlYjYtNDA2Yy1iNzMxLWFhNDZlNDUwNGI0MyIsImlhdCI6MTY0MDM0NjI1MCwic3ViIjoiZGV2ZWxvcGVyL2FmM2ExZTQ3LTI2OGQtNTI0Mi01ZjA3LTE5MmVjNWFlMTBhNyIsInNjb3BlcyI6WyJyb3lhbGUiXSwibGltaXRzIjpbeyJ0aWVyIjoiZGV2ZWxvcGVyL3NpbHZlciIsInR5cGUiOiJ0aHJvdHRsaW5nIn0seyJjaWRycyI6WyIxMzMuMTkuNy4xIl0sInR5cGUiOiJjbGllbnQifV19.D7dJ70SqJbsfAFWf10VAM7IAZWDzt9QXYzENRdA-avbgyWyk_njUQeWxj_GIDaFuaqbKf0N379j6dVoXmBRi9Q';
   String  _url = 'https://api.clashroyale.com/v1';
 
@@ -183,14 +201,14 @@ class WikipediaApi {
   //   'rnlimit': '5',
   // };
 
-  static const _params = {
-    'srsearch': '立命館大学',
-    'format': 'json',
-    'action': 'query',
-    'list': 'search',
-    'srnamespace': '0',
-    'srlimit': '5',
-  };
+  // static const _params = {
+  //   'srsearch': '立命館大学',
+  //   'format': 'json',
+  //   'action': 'query',
+  //   'list': 'search',
+  //   'srnamespace': '0',
+  //   'srlimit': '5',
+  // };
 
   //とりあえず後でバグに対応
   // static const _headers = {
@@ -200,21 +218,21 @@ class WikipediaApi {
   // };
 
   // インスタンス
-  static final WikipediaApi _instance = WikipediaApi._();
+  static final ClashApi _instance = ClashApi._();
 
   // コンストラクタ
-  WikipediaApi._();
+  ClashApi._();
 
   // ファクトリコンストラクタ(アロー関数はまだ慣れないので、書き換えた)
-  // factory WikipediaApi() => _instance;
-  factory WikipediaApi(){
+  // factory ClashApi() => _instance;
+  factory ClashApi(){
     return _instance;
   }
 
   // リクエスト
-  Future<Clan> request() async {
+  Future<List<Clan>> request() async {
     //uri.httpsでurlを作成する。
-    String _endpoint = "https://api.clashroyale.com/v1/cards?limit=10";
+    String _endpoint = "https://api.clashroyale.com/v1/clans/%23LGVVQQJ2/members";
     // String _endpoint = _url + "/clans?name=#LGVVQQJ2";
     // var url = Uri.https(_domain, _path, _params);
     // print('url');
@@ -228,19 +246,8 @@ class WikipediaApi {
       Uri.parse(_endpoint),
       // Send authorization headers to the backend.
       headers: {
-        'Authorization' : 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6ImY0N2FhYjM0LTZlYjYtNDA2Yy1iNzMxLWFhNDZlNDUwNGI0MyIsImlhdCI6MTY0MDM0NjI1MCwic3ViIjoiZGV2ZWxvcGVyL2FmM2ExZTQ3LTI2OGQtNTI0Mi01ZjA3LTE5MmVjNWFlMTBhNyIsInNjb3BlcyI6WyJyb3lhbGUiXSwibGltaXRzIjpbeyJ0aWVyIjoiZGV2ZWxvcGVyL3NpbHZlciIsInR5cGUiOiJ0aHJvdHRsaW5nIn0seyJjaWRycyI6WyIxMzMuMTkuNy4xIl0sInR5cGUiOiJjbGllbnQifV19.D7dJ70SqJbsfAFWf10VAM7IAZWDzt9QXYzENRdA-avbgyWyk_njUQeWxj_GIDaFuaqbKf0N379j6dVoXmBRi9Q',
-        // 'Authorization: Bearer API_TOKEN'
-        // 'Content-type': 'application/json',
-        // 'Accept': 'application/json',
-        // 'TOKEN': _token
+        'Authorization' : 'Bearer ' + _token_in_kuresuto,
       },
-      // {
-      //   // 'DESCRIPTION': 'use macbook',
-      //   // 'TOKEN': _token,
-      //   HttpHeaders.authorizationHeader: requestHeaders,
-      //   // HttpHeaders.
-      //   // HttpHeaders.contentTypeHeader: "application/json; charset=utf-8",
-      // },
     );
 
     // Map<String, String> requestHeaders = {
@@ -252,9 +259,15 @@ class WikipediaApi {
     print('response');
     print(response);
     final responseJson = jsonDecode(response.body);
+
+
     print("responseJson");
     print(responseJson);
-    return Clan.fromJson(responseJson);
+
+    var data = responseJson['items'] as List;
+    print('data');
+    print(data);
+    return data.map((e) => Clan.fromJson(e)).toList();
 
     // print('response');
     // print(response);
@@ -271,35 +284,35 @@ class WikipediaApi {
 }
 
 class Clan {
-  final int id;
+  final String tag;
   final String name;
 
   Clan({
-    required this.id,
+    required this.tag,
     required this.name,
   });
 
   factory Clan.fromJson(Map<String, dynamic> json) {
     return Clan(
-      id: json['id'],
+      tag: json['tag'],
       name: json['name'],
     );
   }
 }
 
-/// Wikipedia記事モデル
-class WikipediaArticle {
-  // ID
-  final int id;
-  // タイトル
-  String title;
-
-  // コンストラクタ(引数がidとtitleの時のコンストラクタ)
-  WikipediaArticle({required this.id, required this.title});
-
-  // コンストラクタ（JSON）(引数がMapの時のコンストラクタ)
-  WikipediaArticle.fromJson(Map<String, dynamic> json) :
-        this.id = json['pageid'] as int,
-        // this.id = json['id'] as int,
-        this.title = json['title'].toString();
-}
+// /// Wikipedia記事モデル
+// class WikipediaArticle {
+//   // ID
+//   final int id;
+//   // タイトル
+//   String title;
+//
+//   // コンストラクタ(引数がidとtitleの時のコンストラクタ)
+//   WikipediaArticle({required this.id, required this.title});
+//
+//   // コンストラクタ（JSON）(引数がMapの時のコンストラクタ)
+//   WikipediaArticle.fromJson(Map<String, dynamic> json) :
+//         this.id = json['pageid'] as int,
+//         // this.id = json['id'] as int,
+//         this.title = json['title'].toString();
+// }
