@@ -1,8 +1,10 @@
-
+import 'package:clash_royal/main.dart';
 import 'package:flutter/material.dart';
 
 class detail extends StatefulWidget {
-  const detail({Key? key}) : super(key: key);
+  detail({Key? key, required Clan this.items}) : super(key: key);
+
+  Clan items;
 
   @override
   _detailState createState() => _detailState();
@@ -11,6 +13,16 @@ class detail extends StatefulWidget {
 class _detailState extends State<detail> {
   @override
   Widget build(BuildContext context) {
-    return Container();
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('詳細'),
+      ),
+      body:ListView(
+        children: <Widget>[
+          Text(widget.items.tag),
+          Text(widget.items.name),
+        ],
+      )
+    );
   }
 }

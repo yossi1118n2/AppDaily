@@ -10,6 +10,8 @@ import 'package:provider/provider.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
+import 'detail.dart';
+
 void main() => runApp(
     MultiProvider(
       // プロバイダ
@@ -44,17 +46,7 @@ class ArticleList extends StatelessWidget {
   Widget build(BuildContext context) {
     // API呼び出し
     context.read<ClashProvider>().init();
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Book List'),
-      ),
-      body: Center(
-          child:Expanded(
-            child: SizedBox(
-            height: 200,
-            child: Column(
-              children: <Widget>[
-                Consumer<ClashProvider>(
+    return Consumer<ClashProvider>(
                   builder: (context, provider, child) {
                     return RefreshIndicator(
                       onRefresh: () => provider.init(),
@@ -64,19 +56,21 @@ class ArticleList extends StatelessWidget {
                           return Card(
                             child: ListTile(
                               title: Text(provider.items[index].name),
+                              onTap: (){
+                                Navigator.push(context, MaterialPageRoute(
+                                  // 実際に表示するページ(ウィジェット)を指定する
+                                    builder: (context) => detail(items: provider.items[index])
+                                ));
+                              }
                             ),
                           );
                         },
+
                       ),
                     );
                   },
-                ),
-              ],
-            ),
-          ),
-      ),
-      ),
     );
+
   }
 }
 
