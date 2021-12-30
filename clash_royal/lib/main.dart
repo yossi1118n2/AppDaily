@@ -56,6 +56,9 @@ class ArticleList extends StatelessWidget {
                           return Card(
                             child: ListTile(
                               title: Text(provider.items[index].name),
+                              leading: Text(provider.items[index].trophy.toString()),
+                              subtitle: Text(provider.items[index].tag),
+                              trailing: Text(provider.items[index].role),
                               onTap: (){
                                 Navigator.push(context, MaterialPageRoute(
                                   // 実際に表示するページ(ウィジェット)を指定する
@@ -88,6 +91,8 @@ class ClashProvider extends ChangeNotifier {
   Future<void> init() async {
     // 記事リストをAPIから取得する
     items = await ClashApi().request();
+    _makedatabase();
+    _insertrecord(items);
     print('items');
     print(items[3].name);
     // リスナーに通知する
@@ -103,7 +108,7 @@ class ClashProvider extends ChangeNotifier {
         onCreate: (Database db, int version) async {
           // When creating the db, create the table
           await db.execute(
-              'CREATE TABLE Idea ('
+              'CREATE TABLE Player ('
                   'tag INTEGER PRIMARY KEY, '
                   'name TEXT, '
                   'trophy INTEGER, '
@@ -145,19 +150,25 @@ class ClashProvider extends ChangeNotifier {
         });
   }
 
-  Future<void> _insertrecord() async {
+  Future<void> _insertrecord(List<Clan> items) async {
 
     // Insert some records in a transaction
     await database.transaction((txn) async {
       // int id1 = await txn.rawInsert(
       //     'INSERT INTO Test(name, value, num) VALUES("some name", 1234, 456.789)');
       // print('inserted1: $id1');
+      for (var item in items) {
 
-      int id = await txn.rawInsert(
-        // 'INSERT INTO Test(name, value, num) VALUES(?, ?, ?)',
-        // ['another name', 12345678, 3.1416]);
-          'INSERT INTO Idea(tag, name) VALUES(?, ?)',
-          [111, 'フェリス']);
+        int id = await txn.rawInsert(
+          // 'INSERT INTO Test(name, value, num) VALUES(?, ?, ?)',
+          // ['another name', 12345678, 3.1416]);
+            'INSERT INTO Player(tag, name, trophy, donate1) VALUES(?, ?, ?, ?)',
+            [item.tag,item.name,item.trophy, item.donations]);
+
+        // int count = await database.rawUpdate(
+        //     'UPDATE SET Player name= ?, trophy = ? WHERE tag = ${item.tag}',
+        //     [item.name, item.trophy, item.tag]);
+      }
     });
     List<Map> list = await database.rawQuery('SELECT * FROM Idea');
     // setState(() {
@@ -171,16 +182,35 @@ class ClashProvider extends ChangeNotifier {
     //     printlist.add(printlist_temp);
     //   }
     // });
+  }
+
+  Future<void> _updatarecord(Clan item) async {
+    // Update some record
+
+    // int count = await database.rawUpdate(
+    //     'UPDATE Test SET name = ?, value = ? WHERE name = ?',
+    //     ['updated name', '9876', 'some name']);
+    // print('updated: $count');
+    // List<Map> list = await database.rawQuery('SELECT * FROM Test');
+
+    int count = await database.rawUpdate(
+        'UPDATE SET Player name= ?, trophy = ? WHERE tag = ${item.tag}',
+        [item.name, item.trophy, item.tag]);
+    print('updated: $count');
+    List<Map> list = await database.rawQuery('SELECT * FROM Idea');
 
   }
 
 }
+
+
 
 /// Wikipediaの記事を取得するAPI
 class ClashApi {
   String _token_in_kuresuto = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6IjllNjljNWU2LTZkMGItNDdmNS1iZTliLTQ2ZDk4YTZkNDZmMiIsImlhdCI6MTY0MDY5ODY5Nywic3ViIjoiZGV2ZWxvcGVyL2FmM2ExZTQ3LTI2OGQtNTI0Mi01ZjA3LTE5MmVjNWFlMTBhNyIsInNjb3BlcyI6WyJyb3lhbGUiXSwibGltaXRzIjpbeyJ0aWVyIjoiZGV2ZWxvcGVyL3NpbHZlciIsInR5cGUiOiJ0aHJvdHRsaW5nIn0seyJjaWRycyI6WyI1OC4xNTcuMjAwLjExOSJdLCJ0eXBlIjoiY2xpZW50In1dfQ.taa2NOpaeKIzuoCN7Fr1CZbOw_OKz-8bNQOQLV1FPJofA87KML34RZF60rBF-LMlqm_VSwxKrN_o1tt9Zkm84Q';
   String _token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6ImY0N2FhYjM0LTZlYjYtNDA2Yy1iNzMxLWFhNDZlNDUwNGI0MyIsImlhdCI6MTY0MDM0NjI1MCwic3ViIjoiZGV2ZWxvcGVyL2FmM2ExZTQ3LTI2OGQtNTI0Mi01ZjA3LTE5MmVjNWFlMTBhNyIsInNjb3BlcyI6WyJyb3lhbGUiXSwibGltaXRzIjpbeyJ0aWVyIjoiZGV2ZWxvcGVyL3NpbHZlciIsInR5cGUiOiJ0aHJvdHRsaW5nIn0seyJjaWRycyI6WyIxMzMuMTkuNy4xIl0sInR5cGUiOiJjbGllbnQifV19.D7dJ70SqJbsfAFWf10VAM7IAZWDzt9QXYzENRdA-avbgyWyk_njUQeWxj_GIDaFuaqbKf0N379j6dVoXmBRi9Q';
   String  _url = 'https://api.clashroyale.com/v1';
+  String _token_in_nakatsu ='eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6Ijg5YzZlYmZjLWIyMjAtNGM2MC1iOGVhLTljMDI2ZTFiNGFmZCIsImlhdCI6MTY0MDg2NzQwNCwic3ViIjoiZGV2ZWxvcGVyL2FmM2ExZTQ3LTI2OGQtNTI0Mi01ZjA3LTE5MmVjNWFlMTBhNyIsInNjb3BlcyI6WyJyb3lhbGUiXSwibGltaXRzIjpbeyJ0aWVyIjoiZGV2ZWxvcGVyL3NpbHZlciIsInR5cGUiOiJ0aHJvdHRsaW5nIn0seyJjaWRycyI6WyIxNC4xMS4yMDIuNjciXSwidHlwZSI6ImNsaWVudCJ9XX0.xptF9TJcpo9q75Zt0kI9GCaXy2Z5DTgSMCD5m4ifFLW5aDWC1TtXg-c4qDxqw1U46t2HcSnLu2KLiMlTJyG5FQ';
 
 
 
@@ -240,7 +270,7 @@ class ClashApi {
       Uri.parse(_endpoint),
       // Send authorization headers to the backend.
       headers: {
-        'Authorization' : 'Bearer ' + _token_in_kuresuto,
+        'Authorization' : 'Bearer ' + _token_in_nakatsu,
       },
     );
 
@@ -278,18 +308,28 @@ class ClashApi {
 }
 
 class Clan {
-  final String tag;
-  final String name;
+  String tag;
+  String name;
+  int trophy;
+  String role;
+  int donations;
+
 
   Clan({
     required this.tag,
     required this.name,
+    required this.trophy,
+    required this.role,
+    required this.donations,
   });
 
   factory Clan.fromJson(Map<String, dynamic> json) {
     return Clan(
       tag: json['tag'],
       name: json['name'],
+      trophy: json['trophies'],
+      role: json['role'],
+      donations: json['donations'],
     );
   }
 }

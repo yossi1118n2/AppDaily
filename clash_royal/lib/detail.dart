@@ -21,6 +21,8 @@ class _detailState extends State<detail> {
         children: <Widget>[
           Text(widget.items.tag),
           Text(widget.items.name),
+          Text(widget.items.trophy.toString()),
+          Text(widget.items.role),
         ],
       )
     );
