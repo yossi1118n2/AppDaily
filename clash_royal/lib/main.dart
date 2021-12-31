@@ -84,15 +84,16 @@ class ClashProvider extends ChangeNotifier {
   late Database database;
   late String path;
 
-  List<Clan> items = [];
+  List<ClanMember> items = [];
+  List<Riverracelog> racelog_items = [];
 
 
   // 記事リストを初期化する
   Future<void> init() async {
     // 記事リストをAPIから取得する
     items = await ClashApi().request();
+    racelog_items = await ClashApi().request_riverracelog();
     _makedatabase();
-    _insertrecord(items);
     print('items');
     print(items[3].name);
     // リスナーに通知する
@@ -150,7 +151,7 @@ class ClashProvider extends ChangeNotifier {
         });
   }
 
-  Future<void> _insertrecord(List<Clan> items) async {
+  Future<void> _insertrecord(List<ClanMember> items) async {
 
     // Insert some records in a transaction
     await database.transaction((txn) async {
@@ -184,7 +185,7 @@ class ClashProvider extends ChangeNotifier {
     // });
   }
 
-  Future<void> _updatarecord(Clan item) async {
+  Future<void> _updatarecord(ClanMember item) async {
     // Update some record
 
     // int count = await database.rawUpdate(
@@ -254,7 +255,7 @@ class ClashApi {
   }
 
   // リクエスト
-  Future<List<Clan>> request() async {
+  Future<List<ClanMember>> request() async {
     //uri.httpsでurlを作成する。
     String _endpoint = "https://api.clashroyale.com/v1/clans/%23LGVVQQJ2/members";
     // String _endpoint = _url + "/clans?name=#LGVVQQJ2";
@@ -291,7 +292,7 @@ class ClashApi {
     var data = responseJson['items'] as List;
     print('data');
     print(data);
-    return data.map((e) => Clan.fromJson(e)).toList();
+    return data.map((e) => ClanMember.fromJson(e)).toList();
 
     // print('response');
     // print(response);
@@ -305,9 +306,34 @@ class ClashApi {
     // print(data);
     // return data.map((e) => WikipediaArticle.fromJson(e)).toList();
   }
+
+  Future<List<Riverracelog>> request_riverracelog() async {
+    String _endpoint = "https://api.clashroyale.com/v1/clans/%23LGVVQQJ2/riverracelog";
+
+    final response = await http.get(
+      Uri.parse(_endpoint),
+      // Send authorization headers to the backend.
+      headers: {
+        'Authorization' : 'Bearer ' + _token_in_nakatsu,
+      },
+    );
+
+    print('response');
+    print(response);
+    final responseJson = jsonDecode(response.body);
+
+
+    print("responseJson");
+    print(responseJson);
+
+    var data = responseJson['items'] as List;
+    print('data');
+    print(data);
+    return data.map((e) => Riverracelog.fromJson(e)).toList();
+  }
 }
 
-class Clan {
+class ClanMember {
   String tag;
   String name;
   int trophy;
@@ -315,7 +341,7 @@ class Clan {
   int donations;
 
 
-  Clan({
+  ClanMember({
     required this.tag,
     required this.name,
     required this.trophy,
@@ -323,8 +349,8 @@ class Clan {
     required this.donations,
   });
 
-  factory Clan.fromJson(Map<String, dynamic> json) {
-    return Clan(
+  factory ClanMember.fromJson(Map<String, dynamic> json) {
+    return ClanMember(
       tag: json['tag'],
       name: json['name'],
       trophy: json['trophies'],
@@ -332,6 +358,41 @@ class Clan {
       donations: json['donations'],
     );
   }
+}
+
+class Riverracelog{
+  int seasonId;
+  int sectionIndex;
+  RiverracePlayerlog items;
+
+
+  Riverracelog({
+    required this.seasonId,
+    required this.sectionIndex,
+    required this.items,
+  });
+
+  factory Riverracelog.fromJson(Map<String, dynamic> json) {
+    return Riverracelog(
+      seasonId: json['seasonId'],
+      sectionIndex: json['sectionIndex'],
+      items: json['standings'],
+    );
+  }
+}
+
+class RiverracePlayerlog{
+  String tag;
+  String name;
+  int  fame;
+  int decksUsed;
+
+  RiverracePlayerlog({
+    required this.tag,
+    required this.name,
+    required this.fame,
+    required this.decksUsed,
+  });
 }
 
 // /// Wikipedia記事モデル
