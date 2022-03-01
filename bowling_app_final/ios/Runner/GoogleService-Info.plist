@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>514375099435-npqnikof0adtd0r5v4me5sqggi5ghp2h.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.514375099435-npqnikof0adtd0r5v4me5sqggi5ghp2h</string>
+	<key>API_KEY</key>
+	<string>AIzaSyCO1sgTANHfJruSW7wnt_zDFcdXdL08SIg</string>
+	<key>GCM_SENDER_ID</key>
+	<string>514375099435</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.yossi1118.bowlingAppFinal</string>
+	<key>PROJECT_ID</key>
+	<string>bowlingappfinal</string>
+	<key>STORAGE_BUCKET</key>
+	<string>bowlingappfinal.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:514375099435:ios:c846ff11d0357f259a366e</string>
+</dict>
+</plist>
